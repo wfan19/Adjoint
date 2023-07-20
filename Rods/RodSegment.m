@@ -48,7 +48,6 @@ classdef RodSegment < handle & matlab.mixin.Copyable
             obj.true_curvature = e_rotation;
 
             obj.l = l;
-            obj.mechanics.l_0 = l;
         end
 
         %% Member functions

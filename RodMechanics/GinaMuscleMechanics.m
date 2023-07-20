@@ -6,13 +6,15 @@ classdef GinaMuscleMechanics < RodMechanicsBase
                 l_0 = 1;
                 f_force = @(strain, pressure) 0;
             end
-            obj@RodMechanicsBase(l_0, f_force);
+            obj@RodMechanicsBase(l_0, @actuatorForce_key);
         end
     end
 
     methods(Static)
         % Gina Olson 2019
         % Copied into this class and reorganized by Bill Fan on 7/20/2023
+        % Mechanics of Gina's McKibben muscles from the Olson 2020 IJSS
+        % paper.
         function force = actuatorForce_key(strain,pressure)
         
         %e_min = -0.44;

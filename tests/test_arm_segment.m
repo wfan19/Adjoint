@@ -58,8 +58,4 @@ function test_get_strains(testCase)
     verifyLessThan(testCase, strains(1), strains(2))
 end
 
-function test_get_forces(testCase)
-
-end
-
 %% Mechanics

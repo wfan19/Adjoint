@@ -10,6 +10,7 @@ classdef RodMechanicsBase
     
     properties
         l_0 = 1
+        strain = 0
         f_force = @f_force_default
     end
     
@@ -24,7 +25,9 @@ classdef RodMechanicsBase
             obj.f_force = f_force;
         end
         
-        function force = f_force_default(strain, pressure)
+        % We assume by default that an actuator's force is entirely
+        % characterized by the strain and input.
+        function force = f_force_default(strain, actuation)
             force = 0;
         end
     end

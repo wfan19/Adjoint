@@ -1,14 +1,11 @@
 classdef BasicBellowMechanics < RodMechanicsBase
     
     methods
-        function obj = BasicBellowMechanics(l_0, f_force)
+        function obj = BasicBellowMechanics(f_force)
             arguments
-                l_0 = 1;
-                f_force = @f_force_default;
+                f_force = make_bellow_force_func();
             end
-            
-            fitresult = make_bellow_force_func();
-            obj@RodMechanicsBase(l_0, fitresult);
+            obj@RodMechanicsBase(l_0, f_force);
         end
     end
 
@@ -16,7 +13,7 @@ classdef BasicBellowMechanics < RodMechanicsBase
         function [fitresult, X] = make_bellow_force_func()
             % TODO: Make this parameterized by keypoints so we can do
             % inverse design!
-            
+
             % Define keypoints
             x0 = [0; 0; 0];
             x1 = [-0.142; 0; 1.1];    % Passive compression

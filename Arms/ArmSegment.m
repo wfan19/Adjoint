@@ -31,12 +31,20 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
             obj.rod_o.g_circ_right = g_circ_right;
             
             for i = 1 : length(obj.rods)
+                rod = obj.rods(i);
+
                 % Use the adjoint to compute each actuator's twist-vector,
                 % given the base-curve twist-vector. 
                 % Note that adjoint_i_o = inv(adjoint_o_i) which is the adjoint inverse
                 adjoint_i_o = obj.adjoints{i};
                 g_circ_right_i = adjoint_i_o * g_circ_right;
-                obj.rods(i).g_circ_right = g_circ_right_i;
+                rod.g_circ_right = g_circ_right_i;
+
+                % Update the strain in the rod
+                % QUESTION: Currently the ArmSegment assumes the rod has a
+                % mechanics component - is that reasonable?
+                strain_i = (rod.l - rod.mechanics.l_0) / rod.mechanics.l_0;
+                rod.mechanics.strain = strain_i;
             end
         end
 
@@ -51,16 +59,13 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
         end
 
         % Compute the strains in each muscle and return the list
-        function strains = get_strains(obj, g_circ_right)
+        function strains = get_strains(obj)
             arguments
                 obj
-                g_circ_right = obj.get_base_curve()
             end
-            obj.set_base_curve(g_circ_right);
             strains = zeros(length(obj.rods), 1);
             for i = 1 : length(obj.rods)
-                rod = obj.rods(i);
-                strains(i) = (rod.l - rod.mechanics.l_0) / rod.mechanics.l_0;
+                strains(i) = obj.rods(i).mechanics.strain;
             end
         end
     end

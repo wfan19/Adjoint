@@ -1,5 +1,4 @@
 classdef BasicMuscleMechanics < RodMechanicsBase
-    
     properties
         l_0 = 1
         f_force = @f_force_default
@@ -11,10 +10,8 @@ classdef BasicMuscleMechanics < RodMechanicsBase
                 l_0 = 1;
                 f_force = @(strain, pressure) 0;
             end
-
-            obj.l_0 = l_0;
-            
-            
+            obj.l_0 = l_0;       
+            obj.f_force = f_force;
         end
     end
 
