@@ -1,0 +1,2 @@
+# Adjoint
+Adjoint is a library for simulating continuum robot arms that are composed of sections with constant cross-section. The focus is on exploiting how constant cross-section geometry enables both the kinematics and mechanics of individual actuators within a continuum robot to be linearly related to each other and the base-curve. This mapping is done through the Adjoint map and its dual co-Adjoint map. 
