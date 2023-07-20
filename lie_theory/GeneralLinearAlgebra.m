@@ -1,4 +1,4 @@
-classdef gl_n
+classdef GeneralLinearAlgebra
     %gl_n: Base class for Lie algebras
     
     properties(Abstract, Constant)
@@ -7,7 +7,7 @@ classdef gl_n
     end
     
     methods
-        function obj = gl_n()
+        function obj = GeneralLinearAlgebra()
         end
     end
     

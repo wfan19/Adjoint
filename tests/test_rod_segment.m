@@ -1,4 +1,4 @@
-function tests = test_rod
+function tests = test_rod_segment
     tests = functiontests(localfunctions);
 end
 
@@ -8,11 +8,11 @@ function setup(testCase)
     l_0 = 1;
     testCase.TestData.l_0 = l_0;
 
-    testCase.TestData.rod2d = RodSegment(SE2, l_0);
-    testCase.TestData.rod3d = RodSegment(SE3, l_0);
+    testCase.TestData.rod2d = RodSegment(Pose2, l_0);
+    testCase.TestData.rod3d = RodSegment(Pose3, l_0);
 
-    g_0_2d = SE2.hat([-1; 2; -3]);
-    g_0_3d = SE3.hat(eul2rotm([0, -pi, 0], "xyz"), [-1; -2; -3]);
+    g_0_2d = Pose2.hat([-1; 2; -3]);
+    g_0_3d = Pose3.hat(eul2rotm([0, -pi, 0], "xyz"), [-1; -2; -3]);
 
     testCase.TestData.rod2d.g_0 = g_0_2d;
     testCase.TestData.rod3d.g_0 = g_0_3d;
@@ -86,7 +86,6 @@ function test_copy(testCase)
 end
 
 %% Test exponential map
-% 
 function test_expm_2d(testCase)
     rod = testCase.TestData.rod2d;
 
@@ -98,7 +97,7 @@ function test_expm_2d(testCase)
     
     mat_poses_truth = zeros(3, 20);
     for i = 1 : length(t)
-        mat_poses_truth(:, i) = SE2.vee(rod.g_0 * se2.expm(g_circ_right * t(i)));
+        mat_poses_truth(:, i) = Pose2.vee(rod.g_0 * Twist2.expm(g_circ_right * t(i)));
     end
 
     verifyEqual(testCase, poses, mat_poses_truth);
@@ -115,7 +114,7 @@ function test_expm_3d(testCase)
     
     mat_poses_truth = zeros(6, 20);
     for i = 1 : length(t)
-        mat_poses_truth(:, i) = SE3.vee(rod.g_0 * se3.expm(g_circ_right * t(i)));
+        mat_poses_truth(:, i) = Pose3.vee(rod.g_0 * Twist3.expm(g_circ_right * t(i)));
     end
 
     verifyEqual(testCase, poses, mat_poses_truth);

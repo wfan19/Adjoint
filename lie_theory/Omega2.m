@@ -1,11 +1,13 @@
-classdef so2 < gl_n
+classdef Omega2 < GeneralLinearAlgebra
+    %Omega2: Manages a 2D angular velocity in skew-symmetric matrix form,
+    %which is an element of so(2), the Lie algebra of SO(2).
     properties (Constant)
         dof = 1
         mat_size = [2, 2]
     end
     
     methods
-        function obj = so2()
+        function obj = Omega2()
         end
     end
     

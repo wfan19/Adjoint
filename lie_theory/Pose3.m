@@ -1,15 +1,15 @@
-classdef SE3 < GL_n
-    %SE2 Summary of this class goes here
-    %   Detailed explanation goes here
+classdef Pose3 < GeneralLinearGroup
+    %Pose3: Manages a 3D homogenous transform matrix, which is an element
+    %of SE(3), the group of 3D Euclidean transformations (isometries).
     
     properties (Constant)
-        algebra = se3
+        algebra = Twist3
         dof = 6
         mat_size = [4, 4]
     end
     
     methods
-        function obj = SE3()
+        function obj = Pose3()
         end
     end
     

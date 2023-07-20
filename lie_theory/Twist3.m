@@ -1,6 +1,6 @@
-classdef se3 < gl_n
-    %SE3 Summary of this class goes here
-    %   Detailed explanation goes here
+classdef Twist3 < GeneralLinearAlgebra
+    %Twist3: Manages a 3D twist-matrix, which is an element of se(3), the
+    %Lie algebra of SE(3).
     
     properties (Constant)
         dof = 6
@@ -8,7 +8,7 @@ classdef se3 < gl_n
     end
     
     methods
-        function obj = se3()
+        function obj = Twist3()
         end
     end
     
@@ -42,8 +42,8 @@ classdef se3 < gl_n
         function SE3_out = expm(v_twist)
             % Analytic form of the SE3 exponentail map, from here: https://arxiv.org/pdf/1812.01537.pdf
             % Extract linear/angular components from a single vector
-            if size(v_twist) == se3.mat_size
-                v_twist = se3.vee(v_twist);
+            if size(v_twist) == Twist3.mat_size
+                v_twist = Twist3.vee(v_twist);
             end
             
             vel = v_twist(1:3);
@@ -77,13 +77,13 @@ classdef se3 < gl_n
         end
 
         function v_out = translation(se3_in)
-            v_se3_in = se3.vee(se3_in);
-            v_out = se3.v_translation(v_se3_in);
+            v_se3_in = Twist3.vee(se3_in);
+            v_out = Twist3.v_translation(v_se3_in);
         end
 
         function omega_out = rotation(se3_in)
-            v_se3_in = se3.vee(se3_in);
-            omega_out = se3.v_rotation(v_se3_in);
+            v_se3_in = Twist3.vee(se3_in);
+            omega_out = Twist3.v_rotation(v_se3_in);
         end
 
         function v_out = v_translation(v_se3_in)

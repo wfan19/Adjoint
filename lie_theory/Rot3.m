@@ -1,13 +1,15 @@
-classdef SO3 < GL_n
+classdef Rot3 < GeneralLinearGroup
+    % Rot3: Manages a 3D rotation matrix, which is an element of SO(3), the
+    % group of 3D rotations.
     
     properties (Constant)
-        algebra = so3
+        algebra = Omega3
         dof = 6
         mat_size = [4, 4]
     end
     
     methods
-        function obj = SO3()
+        function obj = Rot3()
         end
     end
     
@@ -16,7 +18,7 @@ classdef SO3 < GL_n
         function mat_out = hat(mat_R)
             mat_out = mat_R;
             if strcmp(class(mat_R), "double")
-                mat_out = SO3(mat_out);
+                mat_out = Rot3(mat_out);
             end
         end
         

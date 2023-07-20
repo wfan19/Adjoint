@@ -1,15 +1,15 @@
-classdef SE2 < GL_n
-    %SE2 Summary of this class goes here
-    %   Detailed explanation goes here
+classdef Pose2 < GeneralLinearGroup
+    %Pose2: Manages a 2D homogeneous transform matrix, which is an element
+    %of SE(2), the group of 2D Euclidean transformations (isometries).
 
     properties (Constant)
-        algebra = se2
+        algebra = Twist2
         dof = 3
         mat_size = [3, 3]
     end
     
     methods
-        function obj = SE2()
+        function obj = Pose2()
         end
     end
     

@@ -1,13 +1,13 @@
-classdef so3 < gl_n
-    %SO3 Summary of this class goes here
-    %   Detailed explanation goes here
+classdef Omega3 < GeneralLinearAlgebra
+    %Omega3: Manages a 3D angular velocity in skew-symmetric matrix form,
+    %which is an element of so(3), the Lie algebra of SO(3).
     properties (Constant)
         dof = 6
         mat_size = [3, 3]
     end
     
     methods
-        function obj = so3()
+        function obj = Omega3()
         end
     end
     
@@ -33,21 +33,21 @@ classdef so3 < gl_n
         function out = expm(v_omega)
             % Check if input was accidentally a matrix
             if all(size(v_omega) == [3, 3])
-                v_omega = so3.vee(v_omega);
+                v_omega = Omega3.vee(v_omega);
             end
             % Implementation of Rodriguezs' formula
             % Reference from the appendix of: https://arxiv.org/pdf/1812.01537.pdf
             theta = norm(v_omega);
 
             if strcmp(class(theta),"sym")
-                out = eye(3, class(v_omega)) + sin(theta)/theta * so3.hat(v_omega) + ...
-                        (1 - cos(theta))/theta^2 * so3.hat(v_omega)^2;
+                out = eye(3, class(v_omega)) + sin(theta)/theta * Omega3.hat(v_omega) + ...
+                        (1 - cos(theta))/theta^2 * Omega3.hat(v_omega)^2;
             else
                 if round(theta, 6) > 0
-                    out = eye(3, class(v_omega)) + sin(theta)/theta * so3.hat(v_omega) + ...
-                        (1 - cos(theta))/theta^2 * so3.hat(v_omega)^2;
+                    out = eye(3, class(v_omega)) + sin(theta)/theta * Omega3.hat(v_omega) + ...
+                        (1 - cos(theta))/theta^2 * Omega3.hat(v_omega)^2;
                 else
-                    out = eye(3, class(v_omega)) + so3.hat(v_omega) + 0.5*so3.hat(v_omega)^2;
+                    out = eye(3, class(v_omega)) + Omega3.hat(v_omega) + 0.5*Omega3.hat(v_omega)^2;
                 end
             end
         end

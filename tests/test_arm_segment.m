@@ -7,18 +7,18 @@ function setup(testCase)
     N_segments = 5;
     l_0 = 0.5;
     rho = 0.0254;
-    g_o_A = SE2.hat([0, rho, 0]);
-    g_o_B = SE2.hat([0, -rho, 0]);
+    g_o_A = Pose2.hat([0, rho, 0]);
+    g_o_B = Pose2.hat([0, -rho, 0]);
     g_o_rods = {g_o_A; g_o_B};
     
-    g_0_o = SE2.hat([0, 0, -pi/2]);
+    g_0_o = Pose2.hat([0, 0, -pi/2]);
     
     base_segment.rho = rho;
     base_segment.n_spacers = 2;
 
     testCase.TestData.l_0 = l_0; % Default length
     testCase.TestData.rho = 1 * 0.0254; % Define inter-muscle geometry
-    testCase.TestData.arm_2d = ArmSegment(SE2, g_0_o, g_o_rods, l_0);
+    testCase.TestData.arm_2d = ArmSegment(Pose2, g_0_o, g_o_rods, l_0);
 end
 
 function teardown(testCase)

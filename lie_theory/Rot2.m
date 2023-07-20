@@ -1,13 +1,15 @@
-classdef SO2 < GL_n
+classdef Rot2 < GeneralLinearGroup
+    % Rot2: Manages a rotation matrix, which is an element of SO(2) - the
+    % group of 2D rotations.
         
     properties (Constant)
-        algebra = so2
+        algebra = Omega2
         dof = 1
         mat_size = [2, 2]
     end
     
     methods
-        function obj = SO2()
+        function obj = Rot2()
         end
     end
     

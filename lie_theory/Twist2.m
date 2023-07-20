@@ -1,6 +1,6 @@
-classdef se2 < gl_n
-    %SE2 Summary of this class goes here
-    %   Detailed explanation goes here
+classdef Twist2 < GeneralLinearAlgebra
+    %Twist2: Manages a 2D twist matrix, which is an element of se(2), the
+    %Lie algebra of SE(2).
     
     properties (Constant)
         dof = 3
@@ -8,7 +8,7 @@ classdef se2 < gl_n
     end
     
     methods
-        function obj = se2()
+        function obj = Twist2()
         end
     end
     
@@ -35,7 +35,7 @@ classdef se2 < gl_n
             
             % Check if input was a matrix
             if numel(v_se2) ~= 3
-                v_se2 = se2.vee(v_se2);
+                v_se2 = Twist2.vee(v_se2);
             end
             
             vx = v_se2(1);
