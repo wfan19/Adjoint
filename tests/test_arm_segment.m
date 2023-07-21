@@ -15,6 +15,10 @@ function setup(testCase)
     testCase.TestData.l_0 = l_0; % Default length
     testCase.TestData.rho = 1 * 0.0254; % Define inter-muscle geometry
     testCase.TestData.arm_2d = ArmSegment(Pose2, g_0_o, g_o_rods, l_0);
+
+    for i = 1 : length(testCase.TestData.arm_2d.rods)
+        testCase.TestData.arm_2d.rods(i).mechanics = BasicBellowMechanics(l_0);
+    end
 end
 
 function teardown(testCase)
@@ -47,8 +51,8 @@ end
 % Test retrieving the strains of each muscle, based on the base-curve
 function test_get_strains(testCase)
     arm = testCase.TestData.arm_2d;
-    arm.set_base_curve([1; 0; 2]);
-    strains = arm.get_strains();
+    g_circ_right = [1; 0; 2];
+    strains = arm.get_strains(g_circ_right);
 
     % I don't have the exact values, so we'll just make sure it's curving
     % in the right direction.
@@ -60,17 +64,13 @@ end
 % is held straight?"
 function test_get_forces(testCase)
     arm = testCase.TestData.arm_2d;
-    l_0 = testCase.TestData.l_0;
 
-    arm.set_base_curve([1; 0; 2]);
-    for i = 1 : length(arm.rods)
-        arm.rods(i).mechanics = BasicBellowMechanics(l_0);
-    end
     pressures = [0; 20]; % kPa
-    forces = arm.get_forces(pressures);
+    g_circ_right = [0.5; 0; 0];
+    forces = arm.get_forces(pressures, g_circ_right);
 
     % I don't have the exact values, so we'll just make sure it's curving
     % in the right direction.
-    verifyEqual(testCase, forces(1), 0)
+    verifyEqual(testCase, forces(1), 0);
     verifyGreaterThan(testCase, forces(2), 0)
 end

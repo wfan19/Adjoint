@@ -8,13 +8,17 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
         % Supporting variables (could be private?)
         adjoints
     end
+
+    properties(Dependent)
+        g_circ_right
+    end
     
     methods
         function obj = ArmSegment(group, g_o, g_o_rods, l)
-            obj.group = group;              % Store the embedding group
-            obj.rod_o = RodSegment(group, l, g_o); % Rod representing the base curve
-            obj.rods = RodSegment.empty(0, length(g_o_rods));  % List of all actual rods
-            obj.adjoints = cell(1, length(g_o_rods));   % Store the list of adjoint matrices for computation.
+            obj.group = group;                                  % Store the embedding group
+            obj.rod_o = RodSegment(group, l, g_o);              % Rod representing the base curve
+            obj.rods = RodSegment.empty(0, length(g_o_rods));   % List of all actual rods
+            obj.adjoints = cell(1, length(g_o_rods));           % Store the list of adjoint matrices for computation.
 
             % Create the rods
             for i = 1 : length(g_o_rods)
@@ -26,8 +30,8 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
             end
         end
 
-        % Set the base-curve twist-vector (g_circ_right)
-        function set_base_curve(obj, g_circ_right)
+        %% Setters and Getters
+        function set.g_circ_right(obj, g_circ_right)
             obj.rod_o.g_circ_right = g_circ_right;
             
             for i = 1 : length(obj.rods)
@@ -42,25 +46,44 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
             end
         end
 
-        % Retrieve the base-curve twist-vector
-        function g_circ_right = get_base_curve(obj)
+        function g_circ_right = get.g_circ_right(obj)
             g_circ_right = obj.rod_o.g_circ_right;
         end
 
-        % Retrieve the base-curve tip pose
-        function pose = get_tip_pose(obj)
-            pose = obj.group.hat(obj.rod_o.calc_posns());
+        %% Member functions
+        function tip_pose = get_tip_pose(obj, g_circ_right)
+            arguments
+                obj
+                g_circ_right = obj.g_circ_right
+            end
+            obj.g_circ_right = g_circ_right;
+
+            tip_pose = obj.group.hat(obj.rod_o.calc_posns());
         end
 
         % Compute the strains in each muscle and return the list
-        function strains = get_strains(obj)
+        function strains = get_strains(obj, g_circ_right)
+            arguments
+                obj
+                g_circ_right = obj.g_circ_right
+            end
+            obj.g_circ_right = g_circ_right;
+
             strains = zeros(length(obj.rods), 1);
             for i = 1 : length(obj.rods)
                 strains(i) = obj.rods(i).mechanics.strain;
             end
         end
 
-        function forces = get_forces(obj, actuations)
+        % Compute the forces in each muscle and return the list
+        function forces = get_forces(obj, actuations, g_circ_right)
+            arguments
+                obj
+                actuations
+                g_circ_right = obj.g_circ_right
+            end
+            obj.g_circ_right = g_circ_right;
+
             forces = zeros(length(obj.rods), 1);
             for i = 1 : length(obj.rods)
                 forces(i) = obj.rods(i).mechanics.get_force(actuations(i));
