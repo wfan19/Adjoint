@@ -14,13 +14,16 @@ classdef RodSegment < handle & matlab.mixin.Copyable
         
         % Flow vector storage: components vs whole
         g_circ_right    % Flow vector of muscle
-        l = 1    % Length of muscle
-        true_shear           % Shear of muscle
-        true_curvature       % Curvature of muscle
-
+        
         % Components - TODO: Should these be mixins instead?
         mechanics = RodMechanicsBase()       % Mechanics model
         plotter         % Plotting module: 2D or 3D
+    end
+
+    properties(Dependent)
+        l
+        true_shear
+        true_curvature
     end
     
     %% Methods
@@ -28,8 +31,8 @@ classdef RodSegment < handle & matlab.mixin.Copyable
         %% Constructor
         function obj = RodSegment(group, l, g_0)
             arguments
-                group
-                l
+                group = Pose2
+                l = 1
                 g_0 = -1
             end
             
@@ -40,14 +43,11 @@ classdef RodSegment < handle & matlab.mixin.Copyable
             obj.group = group;
             obj.g_0 = g_0;
 
-            %%% Populate default values based on the group dimensionality
-            mat_e = zeros(group.algebra.mat_size);
-            e_translation = group.algebra.translation(mat_e);
-            e_rotation = group.algebra.rotation(mat_e);
-            obj.true_shear = e_translation(2:end);
-            obj.true_curvature = e_rotation;
-
-            obj.l = l;
+            %%% Create default twist-vector g_circ_right
+            mat_0 = zeros(group.algebra.mat_size);
+            g_circ_right_default = group.algebra.vee(mat_0);
+            g_circ_right_default(1) = l;
+            obj.g_circ_right = g_circ_right_default;
         end
 
         %% Member functions
@@ -76,51 +76,51 @@ classdef RodSegment < handle & matlab.mixin.Copyable
             end
         end
         
-        %% Setters
+        %% Getters and Setters
+        % TODO: Refactor l, true_shear, and true_curvature to be DEPENDENT
+        % properties so we no longer have to do all the safeguarding
+        % garbage.
+
         % Here we implement custom setter functions to link the h_tilde
         % property with the l and kappa properties, such that updating one
         % updates the others.
+
+        % Get length of rod
+        function l = get.l(obj)
+            l = obj.g_circ_right(1);
+        end
+
+        function true_shear = get.true_shear(obj)
+            translation = obj.group.algebra.v_translation(obj.g_circ_right);
+            scaled_shear = translation(2:end);  % Shearing is the lateral components of the tangent frame linear vel
+            true_shear = scaled_shear / obj.l;  % Divide scaled shearing by length to recover true shear
+        end
+
+        function true_curvature = get.true_curvature(obj)
+            scaled_curvature = obj.group.algebra.v_rotation(obj.g_circ_right);  % Curvature is the tangent frame angular vel
+            true_curvature = scaled_curvature / obj.l;                          % Divide scaled curvature by length to recover true curvature
+        end
         
         % Setters for l and kappa 
         function set.l(obj, l)
             assert(l ~= 0, "Length of rod cannot be zero")
-            obj.l = l;
             % Update h_tilde accordingly
-            obj.g_circ_right = obj.l * [1; obj.true_shear; obj.true_curvature];
+            obj.g_circ_right = l * [1; obj.true_shear; obj.true_curvature];
+            obj.mechanics.update_strain(obj.l);
         end
         
-        function set.true_curvature(obj, curvature)
-            obj.true_curvature = curvature;
-            % Update h_tilde accordingly
-            obj.g_circ_right = obj.l * [1; obj.true_shear; obj.true_curvature];
+        function set.true_shear(obj, true_shear)
+            obj.g_circ_right = obj.l * [1; true_shear; obj.true_curvature];
         end
-        
-        % Function that updates kappa and l values based on an updated
-        % h_tilde value
+
+        function set.true_curvature(obj, true_curvature)
+            % Update curvature accordingly
+            obj.g_circ_right = obj.l * [1; obj.true_shear; true_curvature];
+        end
+
         function set.g_circ_right(obj, g_circ_right)
-            assert(g_circ_right(1) ~= 0, "Length in g_circ_right cannot be zero") % THis breaks the safeguards
             obj.g_circ_right = g_circ_right;
-            
-            % Update l
-            new_l = g_circ_right(1);
-            if obj.l ~= new_l  % Only set new val if not already set to prevent infinite loop
-                obj.l = new_l;
-            end
-
-            v = obj.group.algebra.v_translation(g_circ_right);
-            omega = obj.group.algebra.v_rotation(g_circ_right);
-
-            new_shear = v(2:end) / new_l;
-            new_curvature = omega / new_l;
-
-            % Only set new val if not already set to prevent infinite loop
-            if any(obj.true_shear ~= new_shear) 
-                obj.true_shear = new_shear;
-            end
-            
-            if any(obj.true_curvature ~= new_curvature)
-                obj.true_curvature = new_curvature;
-            end
+            obj.mechanics = obj.mechanics.update_strain(obj.l);
         end
     end
 end
