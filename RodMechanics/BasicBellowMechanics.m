@@ -1,10 +1,11 @@
 classdef BasicBellowMechanics < RodMechanicsBase
     
     methods
-        function obj = BasicBellowMechanics(f_force)
+        function obj = BasicBellowMechanics(l_0)
             arguments
-                f_force = make_bellow_force_func();
+                l_0 = 1
             end
+            f_force = BasicBellowMechanics.make_bellow_force_func();
             obj@RodMechanicsBase(l_0, f_force);
         end
     end
@@ -13,6 +14,8 @@ classdef BasicBellowMechanics < RodMechanicsBase
         function [fitresult, X] = make_bellow_force_func()
             % TODO: Make this parameterized by keypoints so we can do
             % inverse design!
+
+            % Sign convention: positive force means pushing outward.
 
             % Define keypoints
             x0 = [0; 0; 0];

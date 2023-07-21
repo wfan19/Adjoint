@@ -4,7 +4,6 @@ end
 
 function setup(testCase)
     % Build a simple 2-muscle 2D arm
-    N_segments = 5;
     l_0 = 0.5;
     rho = 0.0254;
     g_o_A = Pose2.hat([0, rho, 0]);
@@ -12,9 +11,6 @@ function setup(testCase)
     g_o_rods = {g_o_A; g_o_B};
     
     g_0_o = Pose2.hat([0, 0, -pi/2]);
-    
-    base_segment.rho = rho;
-    base_segment.n_spacers = 2;
 
     testCase.TestData.l_0 = l_0; % Default length
     testCase.TestData.rho = 1 * 0.0254; % Define inter-muscle geometry
@@ -47,6 +43,7 @@ function test_set_get_base_curve(testCase)
     verifyEqual(testCase, 1, 1);
 end
 
+%% Mechanics
 % Test retrieving the strains of each muscle, based on the base-curve
 function test_get_strains(testCase)
     arm = testCase.TestData.arm_2d;
@@ -58,4 +55,22 @@ function test_get_strains(testCase)
     verifyLessThan(testCase, strains(1), strains(2))
 end
 
-%% Mechanics
+% Test computing the forces of each muscle, given an actuation
+% "What are the forces when the actuators are inflated, but the manipulator
+% is held straight?"
+function test_get_forces(testCase)
+    arm = testCase.TestData.arm_2d;
+    l_0 = testCase.TestData.l_0;
+
+    arm.set_base_curve([1; 0; 2]);
+    for i = 1 : length(arm.rods)
+        arm.rods(i).mechanics = BasicBellowMechanics(l_0);
+    end
+    pressures = [0; 20]; % kPa
+    forces = arm.get_forces(pressures);
+
+    % I don't have the exact values, so we'll just make sure it's curving
+    % in the right direction.
+    verifyEqual(testCase, forces(1), 0)
+    verifyGreaterThan(testCase, forces(2), 0)
+end

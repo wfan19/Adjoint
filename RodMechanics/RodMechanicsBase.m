@@ -27,8 +27,16 @@ classdef RodMechanicsBase
         
         % We assume by default that an actuator's force is entirely
         % characterized by the strain and input.
-        function force = f_force_default(strain, actuation)
+        function force = f_force_default(obj, strain, actuation)
             force = 0;
+        end
+
+        function force = get_force(obj, actuation)
+            force = obj.f_force(obj.strain, actuation);
+        end
+        
+        function obj = update_strain(obj, l)
+            obj.strain = (l - obj.l_0) / obj.l_0;
         end
     end
 end

@@ -39,12 +39,6 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
                 adjoint_i_o = obj.adjoints{i};
                 g_circ_right_i = adjoint_i_o * g_circ_right;
                 rod.g_circ_right = g_circ_right_i;
-
-                % Update the strain in the rod
-                % QUESTION: Currently the ArmSegment assumes the rod has a
-                % mechanics component - is that reasonable?
-                strain_i = (rod.l - rod.mechanics.l_0) / rod.mechanics.l_0;
-                rod.mechanics.strain = strain_i;
             end
         end
 
@@ -60,12 +54,16 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
 
         % Compute the strains in each muscle and return the list
         function strains = get_strains(obj)
-            arguments
-                obj
-            end
             strains = zeros(length(obj.rods), 1);
             for i = 1 : length(obj.rods)
                 strains(i) = obj.rods(i).mechanics.strain;
+            end
+        end
+
+        function forces = get_forces(obj, actuations)
+            forces = zeros(length(obj.rods), 1);
+            for i = 1 : length(obj.rods)
+                forces(i) = obj.rods(i).mechanics.get_force(actuations(i));
             end
         end
     end
