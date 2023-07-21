@@ -64,9 +64,10 @@ end
 % is held straight?"
 function test_get_forces(testCase)
     arm = testCase.TestData.arm_2d;
+    l_0 = testCase.TestData.l_0;
 
     pressures = [0; 20]; % kPa
-    g_circ_right = [0.5; 0; 0];
+    g_circ_right = [l_0; 0; 0];
     forces = arm.get_forces(pressures, g_circ_right);
 
     % I don't have the exact values, so we'll just make sure it's curving
