@@ -5,8 +5,10 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
         rod_o   % Rod representing the base-curve
         rods    % List of rods composing the continuum arm
 
-        % Supporting variables (could be private?)
+        % Supporting variables (could be private?
+        % TODO: Refactor this into a segment_geometry object
         adjoints
+        mat_A
     end
 
     properties(Dependent)
@@ -15,18 +17,35 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
     
     methods
         function obj = ArmSegment(group, g_o, g_o_rods, l)
+            N_rods = length(g_o_rods);
+
             obj.group = group;                                  % Store the embedding group
             obj.rod_o = RodSegment(group, l, g_o);              % Rod representing the base curve
-            obj.rods = RodSegment.empty(0, length(g_o_rods));   % List of all actual rods
-            obj.adjoints = cell(1, length(g_o_rods));           % Store the list of adjoint matrices for computation.
+            obj.rods = RodSegment.empty(0, N_rods);   % List of all actual rods
+            obj.adjoints = cell(1, N_rods);           % Store the list of adjoint matrices for computation.
 
             % Create the rods
-            for i = 1 : length(g_o_rods)
+            for i = 1 : N_rods
                 adjoint_i_o = obj.group.adjoint(inv(g_o_rods{i}));
                 g_0_i = g_o * g_o_rods{i};
 
                 obj.rods(i) = RodSegment(group, l, g_0_i);
                 obj.adjoints{i} = adjoint_i_o;
+            end
+
+            % Create the A matrix: maps forces from actuators to total
+            % force on arm's cross-section center
+            obj.mat_A = zeros(obj.group.dof, N_rods);
+
+            % TODO: Combine with above into one loop?
+            % TODO: not every arm has mechanics - should this be
+            % modularized, and not every model uses mat_A.
+            % Should this be modularized?
+            for i = 1 : N_rods
+                g_o_rod_i = g_o_rods{i};
+                e1 = zeros(obj.group.dof, 1);
+                e1(1) = 1;
+                obj.mat_A(:, i) = transpose(inv(Pose2.adjoint(g_o_rod_i))) * e1;
             end
         end
 
