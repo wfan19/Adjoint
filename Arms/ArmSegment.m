@@ -7,12 +7,14 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
 
         % Supporting variables (could be private?
         % TODO: Refactor this into a segment_geometry object
+        g_o_rods
         adjoints
         mat_A
     end
 
     properties(Dependent)
         g_circ_right
+        g_0_o
     end
     
     methods
@@ -20,6 +22,8 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
             N_rods = length(g_o_rods);
 
             obj.group = group;                                  % Store the embedding group
+            obj.g_o_rods = g_o_rods;                            % Store the cross-section geometry
+
             obj.rod_o = RodSegment(group, l, g_o);              % Rod representing the base curve
             obj.rods = RodSegment.empty(0, N_rods);   % List of all actual rods
             obj.adjoints = cell(1, N_rods);           % Store the list of adjoint matrices for computation.
@@ -50,6 +54,11 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
         end
 
         %% Setters and Getters
+        % Set and retrieve the twist-vector of the base-curve
+        function g_circ_right = get.g_circ_right(obj)
+            g_circ_right = obj.rod_o.g_circ_right;
+        end
+
         function set.g_circ_right(obj, g_circ_right)
             obj.rod_o.g_circ_right = g_circ_right;
             
@@ -65,8 +74,17 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
             end
         end
 
-        function g_circ_right = get.g_circ_right(obj)
-            g_circ_right = obj.rod_o.g_circ_right;
+        % Set and retrive the starting pose of the base-curve
+        function g_0_o = get.g_0_o(obj)
+            g_0_o = obj.rod_o.g_0;
+        end
+
+        function set.g_0_o(obj, g_0_o)
+            obj.rod_o.g_0 = g_0_o;
+
+            for i = 1 : length(obj.rods)
+                obj.rods(i).g_0 = g_0_o * obj.g_o_rods{i};
+            end
         end
 
         %% Member functions

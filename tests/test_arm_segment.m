@@ -47,6 +47,17 @@ function test_set_get_base_curve(testCase)
     verifyEqual(testCase, 1, 1);
 end
 
+% Test shifting the arm base-curve starting poses to see if they shift 
+% the individual ones as well  
+function test_set_base_pose(testCase)
+    arm = testCase.TestData.arm_2d;
+    
+    arm.g_0_o = Pose2.hat([2, 0, -pi/2]);
+
+    verify_delta_g = inv(arm.g_0_o) * arm.rods(1).g_0;
+    verifyEqual(testCase, verify_delta_g, arm.g_o_rods{1}, abstol=eps(1));
+end
+
 %% Mechanics
 % Test retrieving the strains of each muscle, based on the base-curve
 function test_get_strains(testCase)
