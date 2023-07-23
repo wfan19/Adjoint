@@ -19,14 +19,36 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             % Validate if the group of every segment is the same
 
             % TODO: Should we manage creation of the segment list here?
+            max_s = 1 / length(segments);
+            for i = 1 : length(segments)
+                segment = segments(i);
+                
+                segment.rod_o.max_s = max_s;
+                for j = 1 : length(segment.rods)
+                    segment.rods(j).max_s = max_s;
+                end
+
+                if i > 1
+                    segment.g_0_o = segments(i-1).get_tip_pose();
+                end
+            end
             obj.segments = segments;
         end
 
         %% Setters and Getters
         function set.g_circ_right(obj, g_circ_right)
+            assert( ...
+                size(g_circ_right, 2) == length(obj.segments), ...
+                "Number of twist-vectors supplied does not match number of segments in arm" ...
+            )
+
             for i = 1 : length(obj.segments)
                 segment_i = obj.segments(i);
                 segment_i.g_circ_right = g_circ_right(:, i);
+
+                if i > 1
+                    segment_i.g_0_o = obj.segments(i-1).get_tip_pose();
+                end
             end
         end
 

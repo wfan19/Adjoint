@@ -58,3 +58,15 @@ function test_2d_plot_2d_arm_segment(testCase)
 
     Plotter2D.plot_arm_segment(arm_segment, axes(figure()));
 end
+
+function test_2d_plot_2d_arm_series(testCase)
+    arm_series = testCase.TestData.arm_series_2d;
+    arm_series.g_circ_right = [
+        1, 1, 1;
+        0, 0, 0;
+        2, 0, -1
+    ];
+
+    Plotter2D.plot_arm_series(arm_series, axes(figure()));
+    grid on
+end

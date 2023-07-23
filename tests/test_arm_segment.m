@@ -58,6 +58,11 @@ function test_set_base_pose(testCase)
     verifyEqual(testCase, verify_delta_g, arm.g_o_rods{1}, abstol=eps(1));
 end
 
+function test_get_tip_pose(testCase)
+    tip_pose = testCase.TestData.arm_2d.get_tip_pose();
+    verifyEqual(testCase, Pose2.vee(tip_pose), [0; -0.5; -pi/2]);
+end
+
 %% Mechanics
 % Test retrieving the strains of each muscle, based on the base-curve
 function test_get_strains(testCase)
