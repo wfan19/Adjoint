@@ -52,6 +52,14 @@ classdef Pose2 < GeneralLinearGroup
             R_out = Pose2_in(1:2, 1:2);
         end
 
+        function t_out = v_translation(v_Pose2_in)
+            t_out = v_Pose2_in(1:2, :);
+        end
+
+        function R_out = v_rotation(v_Pose2_in)
+            R_out = v_Pose2_in(3, :);
+        end
+
         function TeLg = left_lifted_action(Pose2_in)
             % Left lifted action on SE2
             % AKA the jacobian of a left-action delta_g * g evaluated at g

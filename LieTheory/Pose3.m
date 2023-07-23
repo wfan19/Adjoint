@@ -65,6 +65,14 @@ classdef Pose3 < GeneralLinearGroup
         function R_out = rotation(SE3_in)
             R_out = SE3_in(1:3, 1:3);
         end
+
+        function t_out = v_translation(v_Pose3_in)
+            t_out = v_Pose3_in(1:3, :);
+        end
+
+        function t_out = v_rotation(v_Pose3_in)
+            t_out = v_Pose3_in(4:6, :);
+        end
     end
 end
 

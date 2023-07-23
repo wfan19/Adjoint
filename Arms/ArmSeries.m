@@ -40,6 +40,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             end
         end
 
+        % Get the strains experineced by each muscle in each segment
         function mat_strains = get.strains(obj)
             N_rods= length(obj.segments(1).rods);
             N_segments = length(obj.segments);
@@ -51,7 +52,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             end
         end
 
-        % Get the forces applied by each muscle
+        % Get the forces applied by each muscle in each segment
         function mat_forces = get.forces(obj)
             N_rods= length(obj.segments(1).rods);
             N_segments = length(obj.segments);
@@ -139,6 +140,24 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             external_reactions = obj.calc_external_reaction(Q, g_circ_right);
 
             mat_residuals = internal_reactions + external_reactions;
+            
+            % Enforce shear-free by making the shear residuals the g_circ shear
+            % This way we drive g_circ shear to zero
+            % TODO: 1. make this not in coordinates, 2. make this not universal
+            mat_residuals(2, :) = g_circ_right(2, :);
+        end
+
+        function g_circ_right_eq = solve_equilibrium_gina(arm_series, pressures, Q)        
+            f_check_eq = @(g_circ_right) arm_series.check_equilibrium(pressures, Q, g_circ_right);
+            options = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5);
+
+            [g_circ_right_eq, residuals] = fsolve(f_check_eq, arm_series.g_circ_right, options);
+            
+            % Toggle whether to print the residuals
+            if any(residuals > 0.01)
+                disp("Nonzero residual detected. Printing: ")
+                disp(residuals)
+            end
         end
     end
 end
