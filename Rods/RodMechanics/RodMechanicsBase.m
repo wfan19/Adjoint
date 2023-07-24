@@ -14,7 +14,7 @@ classdef RodMechanicsBase
         f_force = @f_force_default
     end
     
-    methods
+  methods
         function obj = RodMechanicsBase(l_0, f_force)
             arguments
                 l_0 = 1;
@@ -31,13 +31,52 @@ classdef RodMechanicsBase
             force = 0;
         end
 
+        % Compute the force that the actuator would generate if actuated,
+        % given the current strain.
         function force = get_force(obj, actuation)
             force = obj.f_force(obj.strain, actuation);
         end
         
+        % Update the actuator's strain based on a new length
+        % TODO: This pattern feels a little weird - is this the best way to
+        % do this?
         function obj = update_strain(obj, l)
             obj.strain = (l - obj.l_0) / obj.l_0;
         end
+
+        % Plot the actuator's force surface
+        function plot_force_surface(obj, e_range, a_range, resolution)
+            arguments
+                obj
+                e_range = [-0.2, 0.2]
+                a_range = [0, 70]
+                resolution = 40
+            end
+
+            strains = linspace(e_range(1), e_range(2), resolution);
+            actuations = linspace(a_range(1), a_range(2), resolution);
+            
+            [E, A] = meshgrid(strains, actuations);
+            F = zeros(resolution, resolution);
+            for i = 1 : resolution
+                for j = 1 : resolution
+                    strain_i = E(i,j);
+                    actuation_i = A(i, j);
+                    F(i, j) = obj.f_force(strain_i, actuation_i);
+                end
+            end
+            
+            % TODO:
+            % 1) Recolor the different actuation zones
+            % 2) Draw the different meaningful lines:
+            %     - Passive extension/contraction
+            %     - Free movement
+            %     - Blocked force
+
+            figure()
+            surf(E, A, F);
+        end
+        
     end
 end
 
