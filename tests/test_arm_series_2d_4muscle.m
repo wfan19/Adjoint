@@ -26,8 +26,8 @@ function setup(testCase)
     arm_segment_muscles.rods(4).mechanics = GinaMuscleMechanics(l_0);
 
     arm_segment_antagonist = copy(arm_segment_muscles);
-    arm_segment_antagonist.rods(1).mechanics = BasicBellowMechanics(l_0);
-    arm_segment_antagonist.rods(4).mechanics = BasicBellowMechanics(l_0);
+    arm_segment_antagonist.rods(1).mechanics = BasicPolyBellowMechanics(l_0);
+    arm_segment_antagonist.rods(4).mechanics = BasicPolyBellowMechanics(l_0);
 
     % TODO: Better way to create a series of segments.
     N_segments=  3;
