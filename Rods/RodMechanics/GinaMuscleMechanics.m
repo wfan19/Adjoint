@@ -1,12 +1,12 @@
 classdef GinaMuscleMechanics < RodMechanicsBase
     
     methods
-        function obj = GinaMuscleMechanics(l_0, f_force)
+        function obj = GinaMuscleMechanics(l_0)
             arguments
                 l_0 = 1;
-                f_force = @(strain, pressure) 0;
             end
-            obj@RodMechanicsBase(l_0, @actuatorForce_key);
+            f_force = @GinaMuscleMechanics.actuatorForce_key;
+            obj@RodMechanicsBase(l_0, f_force);
         end
     end
 

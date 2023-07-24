@@ -7,6 +7,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
     end
 
     properties(Dependent)
+        group
         % Is matrix form for these properties really the right way to go
         % about this?
         strains
@@ -16,7 +17,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
     
     methods
         function obj = ArmSeries(segments)
-            % Validate if the group of every segment is the same
+            % TODO: Validate if the group of every segment is the same
 
             % TODO: Should we manage creation of the segment list here?
             max_s = 1 / length(segments);
@@ -36,6 +37,9 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
         end
 
         %% Setters and Getters
+        function group = get.group(obj)
+            group = obj.segments(1).group;
+        end
         function set.g_circ_right(obj, g_circ_right)
             assert( ...
                 size(g_circ_right, 2) == length(obj.segments), ...
@@ -87,6 +91,18 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
         end
 
         %% Member functions
+        function tip_pose = get_tip_pose(obj, g_circ_right)
+            arguments
+                obj
+                g_circ_right = obj.g_circ_right
+            end
+            % Update to a new base-curve if it is specified
+            if g_circ_right ~= obj.g_circ_right
+                obj.g_circ_right = g_circ_right;
+            end
+            tip_pose = obj.segments(end).get_tip_pose();
+        end
+
         function mat_reactions = calc_external_reaction(obj, Q, g_circ_right)
             arguments
                 obj
@@ -94,28 +110,27 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                 g_circ_right = obj.g_circ_right
             end
             % Update to a new base-curve if it is specified
-            if g_circ_right ~= obj.g_circ_right
+            if any(g_circ_right ~= obj.g_circ_right, "all")
                 obj.g_circ_right = g_circ_right;
             end
 
-            g_tip = obj.tip_pose(); % Get the tip pose for later
-            group = obj.group;
+            g_tip = obj.get_tip_pose(); % Get the tip pose for later
 
             mat_reactions = zeros(obj.group.dof, length(obj.segments));
-            for i = 1 : N_segments
+            for i = 1 : length(obj.segments)
                 segment = obj.segments(i);
-                g_i = segment.g_o;
+                g_i = segment.g_0_o;
                 g_i_tip = inv(g_i) * g_tip;
         
                 % Transform the force from a force Q in world coodrinates to be in local coordinates at the tip
                 % In Ross parlance, this is a transform from a world-force to a right-force
-                Q_right_undercirc_tip = group.left_lifted_action(g_tip)' * Q;
+                Q_right_undercirc_tip = obj.group.left_lifted_action(g_tip)' * Q;
 
                 % Compute the left-force at the tip, which is the same as
                 % the left-force at the base.
                 % Mapping from right-force to left-force is done through
                 % the dual adjoint inverse.
-                Q_left_undercirc_i = inv(group.adjoint(g_i_tip))' * Q_right_undercirc_tip;
+                Q_left_undercirc_i = inv(obj.group.adjoint(g_i_tip))' * Q_right_undercirc_tip;
                 mat_reactions(:, i) = Q_left_undercirc_i;
             end
         end
@@ -128,7 +143,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                 g_circ_right = obj.g_circ_right
             end
             % Update to a new base-curve if it is specified
-            if g_circ_right ~= obj.g_circ_right
+            if any(g_circ_right ~= obj.g_circ_right, "all")
                 obj.g_circ_right = g_circ_right;
             end
 
@@ -154,7 +169,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                 Q
                 g_circ_right = obj.g_circ_right
             end
-            if g_circ_right ~= obj.g_circ_right
+            if any(g_circ_right ~= obj.g_circ_right, "all")
                 obj.g_circ_right = g_circ_right;
             end
 
@@ -180,6 +195,8 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                 disp("Nonzero residual detected. Printing: ")
                 disp(residuals)
             end
+
+            arm_series.g_circ_right = g_circ_right_eq;
         end
     end
 end

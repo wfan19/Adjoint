@@ -16,7 +16,7 @@ function setup(testCase)
 
     % TODO: There should be a better way of setting muscle mechanics
     for i = 1 : length(arm_segment_2d.rods)
-        arm_segment_2d.rods(i).mechanics = BasicBellowMechanics(l_0);
+        arm_segment_2d.rods(i).mechanics = GinaMuscleMechanics(l_0);
     end
 
     % TODO: Better way to create a series of segments.
@@ -49,4 +49,73 @@ function test_constructor(testCase)
         segment_i = arm_series.segments(i);
         verifyEqual(testCase, segment_i.g_circ_right, [l_0; 0; 0]);
     end
+end
+
+%% Test force calculations under loading and actuation
+function test_external_reactions(testCase)
+    arm_series = testCase.TestData.arm_series_2d;
+    
+    Q = [0; -1; 0];
+    g_circ_right = [
+        0.5, 0.5, 0.5;
+        0, 0, 0;
+        1, 1, 1;
+    ];
+    
+    mat_reactions = arm_series.calc_external_reaction(Q, g_circ_right);
+    % TODO: Is there a validation that we want to add here, besides the
+    % fact that the code runs?
+end
+
+function test_internal_reactions(testCase)
+    arm_series = testCase.TestData.arm_series_2d;
+
+    pressures = [0; 30];
+    g_circ_right = [
+        0.5, 0.5, 0.5;
+        0, 0, 0;
+        1, 1, 1;
+    ];
+
+    mat_reactions = arm_series.calc_internal_reaction(pressures, g_circ_right);
+end
+
+% Verify that at equilibrium, the force/mometn residual function is truly
+% all zero.
+function test_check_equilibrium(testCase)
+    arm_series = testCase.TestData.arm_series_2d;
+    l_0 = testCase.TestData.l_0;
+
+    pressures_eq = [0; 0];
+    Q_eq = [0; 0; 0];
+    g_circ_right_eq = l_0 * [
+        1 1 1;
+        0 0 0;
+        0 0 0
+    ];
+
+    residuals = arm_series.check_equilibrium(pressures_eq, Q_eq, g_circ_right_eq);
+
+    verifyEqual(testCase, residuals, zeros(size(residuals)))
+end
+
+%% Test implementation of Gina's equilibrium model:
+function test_ginas_model_unloaded_2muscle(testCase)
+    arm_series = testCase.TestData.arm_series_2d;
+    Q = [0; 0; 0];
+    pressures = [0; 30];
+    
+    g_circ_right_eq = arm_series.solve_equilibrium_gina(pressures, Q);
+    
+    Plotter2D.plot_arm_series(arm_series, axes(figure()));
+end
+
+function test_ginas_model_loaded_2muscle(testCase)
+    arm_series = testCase.TestData.arm_series_2d;
+    Q = [0; -5; 0];
+    pressures = [0; 30];
+    
+    g_circ_right_eq = arm_series.solve_equilibrium_gina(pressures, Q);
+    
+    Plotter2D.plot_arm_series(arm_series, axes(figure()));
 end
