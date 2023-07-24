@@ -3,6 +3,8 @@ classdef Plotter2D
     %   Detailed explanation goes here
     
     properties
+        % Here's an idea: what if a plotter instance owned an arm, and the
+        % line handles for the arm?
     end
     
     methods
@@ -38,6 +40,7 @@ classdef Plotter2D
                 segment_i = arm_series.segments(i);
                 Plotter2D.plot_arm_segment(segment_i, ax);
             end
+            grid(ax, "on")
         end
     end
 end

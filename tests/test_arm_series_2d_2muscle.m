@@ -100,7 +100,7 @@ function test_check_equilibrium(testCase)
 end
 
 %% Test implementation of Gina's equilibrium model:
-function test_ginas_model_unloaded_2muscle(testCase)
+function test_ginas_model_unloaded(testCase)
     arm_series = testCase.TestData.arm_series_2d;
     Q = [0; 0; 0];
     pressures = [0; 30];
@@ -110,7 +110,7 @@ function test_ginas_model_unloaded_2muscle(testCase)
     Plotter2D.plot_arm_series(arm_series, axes(figure()));
 end
 
-function test_ginas_model_loaded_2muscle(testCase)
+function test_ginas_model_loaded(testCase)
     arm_series = testCase.TestData.arm_series_2d;
     Q = [0; -5; 0];
     pressures = [0; 30];

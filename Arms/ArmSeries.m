@@ -188,7 +188,12 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             f_check_eq = @(g_circ_right) arm_series.check_equilibrium(pressures, Q, g_circ_right);
             options = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5);
 
-            [g_circ_right_eq, residuals] = fsolve(f_check_eq, arm_series.g_circ_right, options);
+            g_circ_right_0 = zeros(size(arm_series.g_circ_right));
+            for i = 1 : length(arm_series.segments)
+                g_circ_right_0(1, i) = arm_series.segments(i).rod_o.mechanics.l_0;
+            end
+
+            [g_circ_right_eq, residuals] = fsolve(f_check_eq, g_circ_right_0, options);
             
             % Toggle whether to print the residuals
             if any(residuals > 0.01)
