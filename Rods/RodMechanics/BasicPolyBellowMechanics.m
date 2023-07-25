@@ -11,7 +11,7 @@ classdef BasicPolyBellowMechanics < RodMechanicsBase
     end
 
     methods(Static)
-        function [fitresult, X] = make_poly_bellow_force_func()
+        function [f_force, X] = make_poly_bellow_force_func()
             % Define keypoints
             x0 = [0; 0; 0];
             x1 = [-0.142; 0; 1.1];    % Passive compression
@@ -60,6 +60,14 @@ classdef BasicPolyBellowMechanics < RodMechanicsBase
             
             % Fit model to data.
             [fitresult, gof] = fit( [xData, yData], zData, ft );
+
+            coeffs = num2cell(coeffvalues(fitresult));
+            [p00, p10, p01, p20, p11, p02, p30, p21, p12, p03] = coeffs{:}; % Unpack the coefficients into individual values
+            f_force = @(strain, pressure) ...
+                p00 + ...
+                p10*strain + p01*pressure + ...
+                p20*strain^2 + p11*strain*pressure + p02*pressure^2 + ...
+                p30*strain^3 + p21*strain^2*pressure + p12*strain*pressure^2 + p03*pressure^3;
         end
     end
 end

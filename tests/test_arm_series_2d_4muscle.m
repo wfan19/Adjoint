@@ -70,6 +70,23 @@ function test_plotting(testCase)
 end
 
 %% Test solving the mechanics
+function test_ginas_model_antagonism_single_case_profile(testCase)
+    profile on
+    arm_series = testCase.TestData.arm_series_antagonist;
+    fig = figure();
+    
+    % Scenario 1: Just actuate one of the McKibbens
+    pressures = [0; 60; 0; 20];
+    Q = [0; -5; 0];
+
+    g_circ_right_eq = arm_series.solve_equilibrium_gina(pressures, Q);
+    ax_1 = subplot(2, 2, 1);
+    Plotter2D.plot_arm_series(arm_series, ax_1)
+    title("5N load, P = [0; 60; 0; 20]")
+    profile off
+    profile viewer
+end
+
 function test_ginas_model_four_muscles(testCase)
     arm_series = testCase.TestData.arm_series_muscles;
     fig = figure();
