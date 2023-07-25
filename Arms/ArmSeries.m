@@ -184,16 +184,28 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             mat_residuals(2, :) = g_circ_right(2, :);
         end
 
-        function g_circ_right_eq = solve_equilibrium_gina(arm_series, pressures, Q)        
+        function g_circ_right_eq = solve_equilibrium_gina(arm_series, pressures, Q, options)
+            arguments
+                arm_series
+                pressures
+                Q
+                options.print=true
+            end
+            % Curry the cost function: here we just solve for g_circ_right.
             f_check_eq = @(g_circ_right) arm_series.check_equilibrium(pressures, Q, g_circ_right);
-            options = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5);
+
+            % Optimizer options
+            opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5);     % Increase maximum allowed function evaluations
+            if options.print
+                opt = optimoptions(opt, "display", "off");
+            end
 
             g_circ_right_0 = zeros(size(arm_series.g_circ_right));
             for i = 1 : length(arm_series.segments)
                 g_circ_right_0(1, i) = arm_series.segments(i).rod_o.mechanics.l_0;
             end
 
-            [g_circ_right_eq, residuals] = fsolve(f_check_eq, g_circ_right_0, options);
+            [g_circ_right_eq, residuals] = fsolve(f_check_eq, g_circ_right_0, opt);
             
             % Toggle whether to print the residuals
             if any(residuals > 0.01)
