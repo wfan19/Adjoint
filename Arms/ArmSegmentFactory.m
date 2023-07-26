@@ -14,11 +14,7 @@ classdef ArmSegmentFactory
             g_0_o = Pose2.hat([0, 0, -pi/2]);
     
             arm_segment = ArmSegment(Pose2, g_0_o, g_o_rods, l_0);
-            
             arm_segment.rod_o.mechanics.l_0 = l_0; % Default length of the whole segment
-            
-            arm_segment.rods(1).mechanics = GinaMuscleMechanics(l_0);
-            arm_segment.rods(2).mechanics = GinaMuscleMechanics(l_0);
         end
 
         function arm_segment = make_2d_antagonism(rho_inner, rho_outer, l_0)
@@ -26,18 +22,12 @@ classdef ArmSegmentFactory
             g_o_A = Pose2.hat([0, -rho_inner, 0]);
             g_o_B = Pose2.hat([0, rho_inner, 0]);
             g_o_Y = Pose2.hat([0, rho_outer, 0]);
-            obj.g_o_rods = {g_o_X; g_o_A; g_o_B; g_o_Y};
+            g_o_rods = {g_o_X; g_o_A; g_o_B; g_o_Y};
 
             g_0_o = Pose2.hat([0, 0, -pi/2]);
     
             arm_segment = ArmSegment(Pose2, g_0_o, g_o_rods, l_0);
-            
             arm_segment.rod_o.mechanics.l_0 = l_0; % Default length of the whole segment
-            
-            arm_segment.rods(1).mechanics = BasicPolyBellowMechanics(l_0);
-            arm_segment.rods(2).mechanics = GinaMuscleMechanics(l_0);
-            arm_segment.rods(3).mechanics = GinaMuscleMechanics(l_0);
-            arm_segment.rods(4).mechanics = BasicPolyBellowMechanics(l_0);
         end
 
         function arm_segment = make_3d_circular(rho, l_0)

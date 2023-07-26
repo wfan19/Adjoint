@@ -139,6 +139,28 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
                 forces(i) = obj.rods(i).mechanics.get_force(actuations(i));
             end
         end
+
+        function set_mechanics(obj, mechanics, i_rods)
+            arguments
+                obj
+                mechanics
+                i_rods = 0
+            end
+            if all(i_rods == 0, "all")
+                % We are looking to set all mechanics models to specified
+                for i = 1 : length(obj.rods)
+                    obj.rods(i).mechanics = mechanics;
+                end
+            else
+                % We are just setting the mechanics models of the specified
+                % rods
+                for i = 1 : length(i_rods)
+                    i_rod = i_rods(i);          % Get current rod index
+                    rod_i = obj.rods(i_rod);    % Get the current rod
+                    rod_i.mechanics = mechanics;
+                end
+            end
+        end
     end
 
     methods(Access = protected)

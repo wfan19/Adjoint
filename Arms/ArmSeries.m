@@ -7,12 +7,20 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
     end
 
     properties(Dependent)
+        % Basic properties
         group
-        % Is matrix form for these properties really the right way to go
+        N_segments
+        N_rods
+
+        % Kinematic properties
+        % TODO: Is matrix form for these properties really the right way to go
         % about this?
         strains
         forces
         g_circ_right
+
+        % A matrix of the rod mechanics involved
+        mechanics
     end
     
     methods
@@ -40,13 +48,23 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
         function group = get.group(obj)
             group = obj.segments(1).group;
         end
+
+        function N_rods = get.N_rods(obj)
+            N_rods = length(obj.segments(1).rods);
+        end
+
+        function N_segments = get.N_segments(obj)
+            N_segments = length(obj.segments);
+        end
+
+        % Set the base curve twist vector
         function set.g_circ_right(obj, g_circ_right)
             assert( ...
                 size(g_circ_right, 2) == length(obj.segments), ...
                 "Number of twist-vectors supplied does not match number of segments in arm" ...
             )
 
-            for i = 1 : length(obj.segments)
+            for i = 1 : obj.N_segments
                 segment_i = obj.segments(i);
                 segment_i.g_circ_right = g_circ_right(:, i);
 
@@ -56,23 +74,20 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             end
         end
 
+        % Get the base curve twist vector
         function mat_g_circ_right = get.g_circ_right(obj)
-            dof = obj.group.dof;
-            N_segments = length(obj.segments);
-            mat_g_circ_right = zeros(dof, N_segments);
+            mat_g_circ_right = zeros(obj.group.dof, obj.N_segments);
     
-            for i = 1 : N_segments
+            for i = 1 : obj.N_segments
                 mat_g_circ_right(:, i) = obj.segments(i).g_circ_right;
             end
         end
 
         % Get the strains experineced by each muscle in each segment
         function mat_strains = get.strains(obj)
-            N_rods= length(obj.segments(1).rods);
-            N_segments = length(obj.segments);
-            mat_strains = zeros(N_rods, N_segments);
+            mat_strains = zeros(obj.N_rods, obj.N_segments);
 
-            for i = 1 : length(obj.segments)
+            for i = 1 : obj.N_segments
                 segment_i = obj.segments(i);
                 mat_strains(:, i) = segment_i.strains;
             end
@@ -80,17 +95,24 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
 
         % Get the forces applied by each muscle in each segment
         function mat_forces = get.forces(obj)
-            N_rods= length(obj.segments(1).rods);
-            N_segments = length(obj.segments);
-            mat_forces = zeros(N_rods, N_segments);
+            mat_forces = zeros(obj.N_rods, obj.N_segments);
 
-            for i = 1 : length(obj.segments)
+            for i = 1 : obj.N_segments
                 segment_i = obj.segments(i);
                 mat_forces(:, i) = segment_i.strains;
             end
         end
 
+        % Get the mechanics models of each rod segment used
+        function mat_mechanics = get.mechanics(obj)
+            mat_mechanics = cell(obj.N_rods, obj.N_segments);
+            for i = 1 : obj.N_segments
+                mat_mechanics(:, i) = obj.segments(i).mechanics;
+            end
+        end
+
         %% Member functions
+        %%% Setter and getter member functions
         function tip_pose = get_tip_pose(obj, g_circ_right)
             arguments
                 obj
@@ -103,6 +125,20 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             tip_pose = obj.segments(end).get_tip_pose();
         end
 
+        function set_mechanics(obj, mechanics, i_rods)
+            arguments
+                obj
+                mechanics
+                i_rods = 0
+            end
+
+            for seg = 1 : obj.N_segments
+                segment_i = obj.segments(seg);
+                segment_i.set_mechanics(mechanics, i_rods)
+            end
+        end
+
+        %%% Mechanics member functions!
         function mat_reactions = calc_external_reaction(obj, Q, g_circ_right)
             arguments
                 obj
@@ -214,6 +250,15 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             end
 
             arm_series.g_circ_right = g_circ_right_eq;
+        end
+    end
+
+    methods(Access=protected)
+        function cp = copyElement(obj)
+            cp = copyElement@matlab.mixin.Copyable(obj);
+            for i = 1 : obj.N_segments
+                cp.segments(i) = copy(obj.segments(i));
+            end
         end
     end
 end
