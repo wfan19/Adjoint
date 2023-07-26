@@ -1,4 +1,4 @@
-function tests = test_arm_series
+function tests = test_arm_series_2d_2muscle
     tests = functiontests(localfunctions);
 end
 
@@ -6,22 +6,10 @@ function setup(testCase)
     % Build a simple 2-muscle 2D arm
     l_0 = 0.5;
     rho = 0.0254;
-    g_o_A = Pose2.hat([0, rho, 0]);
-    g_o_B = Pose2.hat([0, -rho, 0]);
-    g_o_rods = {g_o_A; g_o_B};
-    
-    g_0_o = Pose2.hat([0, 0, -pi/2]);
+    N_segments = 3;
 
-    arm_segment_2d = ArmSegment(Pose2, g_0_o, g_o_rods, l_0);
-
-    % TODO: There should be a better way of setting muscle mechanics
-    for i = 1 : length(arm_segment_2d.rods)
-        arm_segment_2d.rods(i).mechanics = GinaMuscleMechanics(l_0);
-    end
-
-    % TODO: Better way to create a series of segments.
-    arm_segments_2d = [copy(arm_segment_2d), copy(arm_segment_2d), copy(arm_segment_2d)];
-    arm_series_2d = ArmSeries(arm_segments_2d);
+    arm_series_2d = ArmSeriesFactory.constant_2d_muscle_arm(N_segments, rho, l_0);
+    arm_segment_2d = arm_series_2d.segments(1);
 
     % Save all values to the testCase TestData struct
     testCase.TestData.l_0 = l_0; % Default length
