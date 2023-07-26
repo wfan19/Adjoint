@@ -15,6 +15,7 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
     properties(Dependent)
         g_circ_right
         g_0_o
+        mechanics
     end
     
     methods
@@ -84,6 +85,18 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
 
             for i = 1 : length(obj.rods)
                 obj.rods(i).g_0 = g_0_o * obj.g_o_rods{i};
+            end
+        end
+
+        % Set and retrieve the mechanics models of the rods in the segment
+        function mechanics = get.mechanics(obj)
+            mechanics = {obj.rods.mechanics};
+            mechanics = mechanics(:);
+        end
+
+        function set.mechanics(obj, mechanics)
+            for i = 1 : length(obj.rods)
+                obj.rods(i).mechanics = mechanics{i};
             end
         end
 

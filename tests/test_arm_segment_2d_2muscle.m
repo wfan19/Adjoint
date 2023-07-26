@@ -3,16 +3,12 @@ function tests = test_arm_segment_2d_2muscle
 end
 
 function setup(testCase)
-
     rho = 0.0254;
     l_0 = 0.5;
     arm_segment = ArmSegmentFactory.make_2d_2muscle(rho, l_0);
 
-    % Define all rods to be bellows
-    % TODO: There has to be a better way to do this
-    for i = 1 : length(arm_segment.rods)
-        arm_segment.rods(i).mechanics = BasicBellowMechanics(l_0);
-    end
+    % Define the mechanics models of the arm segment
+    arm_segment.mechanics = {BasicBellowMechanics(l_0), BasicBellowMechanics(l_0)};
 
     testCase.TestData.l_0 = l_0; % Default length
     testCase.TestData.rho = rho; % Define inter-muscle geometry
@@ -62,6 +58,27 @@ function test_get_tip_pose(testCase)
 end
 
 %% Mechanics
+% Verify that we can retrieve the mechanics type of each muscle
+function test_get_mechanics(testCase)
+    arm = testCase.TestData.arm_segment;
+    mechanics = arm.mechanics;
+
+    for i = 1
+        verifyEqual(testCase, class(mechanics{i}), class(arm.rods(i).mechanics))
+    end
+end
+
+% Verify that we can set the mechanics type of muscles in an arm
+function test_set_mechanics(testCase)
+    arm = testCase.TestData.arm_segment;
+    mechanics = arm.mechanics;
+    mechanics{1} = BasicPolyBellowMechanics;
+    arm.mechanics = mechanics;
+
+    mechanics_test = arm.mechanics;
+    verifyEqual(testCase, class(mechanics_test{1}), class(BasicPolyBellowMechanics))
+end
+
 % Test retrieving the strains of each muscle, based on the base-curve
 function test_get_strains(testCase)
     arm = testCase.TestData.arm_segment;
