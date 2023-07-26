@@ -80,9 +80,11 @@ end
 function test_copy(testCase)
     rod2d_2 = copy(testCase.TestData.rod2d);
     rod2d_2.l = 2;
+    rod2d_2.mechanics.l_0 = testCase.TestData.rod2d.mechanics.l_0 * 2;
 
     verifyEqual(testCase, testCase.TestData.rod2d.l, 1);
     verifyEqual(testCase, rod2d_2.l, 2);
+    verifyEqual(testCase, rod2d_2.mechanics.l_0, testCase.TestData.rod2d.mechanics.l_0 * 2)
 end
 
 %% Test exponential map
