@@ -231,7 +231,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             f_check_eq = @(g_circ_right) arm_series.check_equilibrium(pressures, Q, g_circ_right);
 
             % Optimizer options
-            opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5, "MaxIterations", 4e2);     % Increase maximum allowed function evaluations
+            opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5, "MaxIterations", 4e2, "Algorithm", "levenberg-marquardt");     % Increase maximum allowed function evaluations
             if options.print
                 opt = optimoptions(opt, "display", "final");
             end
