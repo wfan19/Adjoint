@@ -89,7 +89,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
 
             for i = 1 : obj.N_segments
                 segment_i = obj.segments(i);
-                mat_strains(:, i) = segment_i.strains;
+                mat_strains(:, i) = segment_i.get_strains();
             end
         end
 
@@ -99,7 +99,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
 
             for i = 1 : obj.N_segments
                 segment_i = obj.segments(i);
-                mat_forces(:, i) = segment_i.strains;
+                mat_forces(:, i) = segment_i.get_forces();
             end
         end
 
@@ -231,9 +231,9 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             f_check_eq = @(g_circ_right) arm_series.check_equilibrium(pressures, Q, g_circ_right);
 
             % Optimizer options
-            opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5);     % Increase maximum allowed function evaluations
+            opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5, "MaxIterations", 4e2);     % Increase maximum allowed function evaluations
             if options.print
-                opt = optimoptions(opt, "display", "off");
+                opt = optimoptions(opt, "display", "final");
             end
 
             g_circ_right_0 = zeros(size(arm_series.g_circ_right));

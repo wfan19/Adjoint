@@ -9,6 +9,7 @@ function setup(testCase)
     N_segments = 3;
 
     arm_series_2d = ArmSeriesFactory.constant_2d_muscle_arm(N_segments, rho, l_0);
+    arm_series_2d.set_mechanics(GinaMuscleMechanics(l_0));
     arm_segment_2d = arm_series_2d.segments(1);
 
     % Save all values to the testCase TestData struct
