@@ -13,6 +13,11 @@ classdef RodMechanicsBase
         strain = 0
         f_force = @f_force_default
     end
+
+    properties(Constant)
+        e_bounds = [-0.5, 0.5]   % Bounds on the strain
+        a_bounds = [0, 50]   % Bounds on the actuation/pressure values
+    end
     
   methods
         function obj = RodMechanicsBase(l_0, f_force)
@@ -28,7 +33,7 @@ classdef RodMechanicsBase
         % We assume by default that an actuator's force is entirely
         % characterized by the strain and input.
         function force = f_force_default(obj, strain, actuation)
-            force = 0;
+            error("Attempting to call force function of a base class rod function!")
         end
 
         % Compute the force that the actuator would generate if actuated,
@@ -45,21 +50,22 @@ classdef RodMechanicsBase
         end
 
         % Plot the actuator's force surface
-        function plot_force_surface(obj, e_range, a_range, resolution)
+        function plot_force_surface(obj, e_range, a_range, ax, options)
             arguments
                 obj
-                e_range = [-0.2, 0.2]
-                a_range = [0, 70]
-                resolution = 40
+                e_range = obj.e_range
+                a_range = obj.a_range
+                ax = axes(figure())
+                options.resolution = 40
             end
 
-            strains = linspace(e_range(1), e_range(2), resolution);
-            actuations = linspace(a_range(1), a_range(2), resolution);
+            strains = linspace(e_range(1), e_range(2), options.resolution);
+            actuations = linspace(a_range(1), a_range(2), options.resolution);
             
             [E, A] = meshgrid(strains, actuations);
-            F = zeros(resolution, resolution);
-            for i = 1 : resolution
-                for j = 1 : resolution
+            F = zeros(options.resolution, options.resolution);
+            for i = 1 : options.resolution
+                for j = 1 : options.resolution
                     strain_i = E(i,j);
                     actuation_i = A(i, j);
                     F(i, j) = obj.f_force(strain_i, actuation_i);
@@ -72,9 +78,7 @@ classdef RodMechanicsBase
             %     - Passive extension/contraction
             %     - Free movement
             %     - Blocked force
-
-            figure()
-            surf(E, A, F);
+            mesh(ax, E, A, F);
         end
         
     end

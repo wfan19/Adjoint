@@ -1,5 +1,12 @@
 classdef GinaMuscleMechanics < RodMechanicsBase
-    
+
+    properties(Constant)
+        % Actuator characterization bounds determined from the plot in
+        % Olson 2021 IJSS.
+        e_range = [-0.5, 0.05];
+        a_range = [0, 100];
+    end
+
     methods
         function obj = GinaMuscleMechanics(l_0)
             arguments
