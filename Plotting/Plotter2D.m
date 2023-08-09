@@ -11,7 +11,6 @@ classdef Plotter2D
         function obj = Plotter2D()
         end
     end
-
     % All plotting functions are static for now
     % Might make Plotter a proper class later?
     methods(Static)
@@ -41,6 +40,36 @@ classdef Plotter2D
                 Plotter2D.plot_arm_segment(segment_i, ax);
             end
             grid(ax, "on")
+        end
+
+        function plot_g_circ_right(arm_series, fig)
+            cell_g_circ_right = cell(1, arm_series.N_rods);
+            for i = 1 : arm_series.N_rods
+                % For each rod, collect twist of each segment
+                rod_i_g_circ_right = zeros(3, arm_series.N_segments);
+                for j = 1 : arm_series.N_segments
+                    % Store the segment twist as column in the rod's twist matrix
+                    rod_i_g_circ_right(:, j) = arm_series.segments(j).rods(i).g_circ_right;
+                end
+                cell_g_circ_right{i} = rod_i_g_circ_right;
+            end
+
+            % Now we plot the values for each rod
+            tiledlayout(fig, 1, 3);
+            titles = ["Strain", "Shear", "Length-scaled Curvature"];
+            for i = 1 : 3
+                nexttile
+                hold on
+                grid on
+                s = linspace(0, 1, arm_series.N_segments);
+                for j = 1 : length(cell_g_circ_right)
+                    rod_i_g_circ_right = cell_g_circ_right{j};
+                    vals = rod_i_g_circ_right(i, :);
+                    plot(s, vals);
+                end
+                title(titles(i));
+                legend(string(1:arm_series.N_rods));
+            end
         end
     end
 end
