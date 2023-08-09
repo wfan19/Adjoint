@@ -95,6 +95,7 @@ function test_ginas_model_unloaded(testCase)
     pressures = [0; 30];
     
     g_circ_right_eq = arm_series.solve_equilibrium_gina(pressures, Q);
+    test_fetch_g_circ_right = arm_series.g_circ_right
     
     Plotter2D.plot_arm_series(arm_series, axes(figure()));
 end

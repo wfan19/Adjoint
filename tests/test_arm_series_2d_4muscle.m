@@ -6,6 +6,7 @@ function setup(testCase)
     % Build a simple 2-muscle 2D arm
     l_0 = 0.5;
     rho = 0.0254;
+    N_segments = 3;
 
     % Create a 4-muscle arm purely made of muscles
     arm_series_muscles = ArmSeriesFactory.constant_2d_antagonist_arm(N_segments, rho*1/3, rho, l_0);
@@ -50,6 +51,7 @@ function test_ginas_model_antagonism_single_case_profile(testCase)
     Q = [0; -5; 0];
 
     g_circ_right_eq = arm_series.solve_equilibrium_gina(pressures, Q);
+    test_fetch_g_circ_right = arm_series.g_circ_right;
     Plotter2D.plot_arm_series(arm_series, axes(fig))
     title("5N load, P = [0; 60; 0; 20]")
     profile off
@@ -144,4 +146,6 @@ function test_ginas_model_antagonism(testCase)
     title("5N load, P = [0; 60; 0; 10]")
 
     sgtitle("Bellow | Muscle | Muscle | Bellow")
+
+    verifyEqual(testCase, all(abs(g_circ_right_eq(2, :)) < 0.001, "all"), true);
 end
