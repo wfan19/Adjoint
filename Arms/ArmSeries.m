@@ -15,9 +15,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
         % Kinematic properties
         % TODO: Is matrix form for these properties really the right way to go
         % about this?
-        strains
-        forces
-        g_circ_right
+        g_circ_right % A matrix that stores the g_circ_right of each component segments as a column.
 
         % A matrix of the rod mechanics involved
         mechanics
@@ -69,6 +67,8 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                 segment_i.g_circ_right = g_circ_right(:, i);
 
                 if i > 1
+                    % Update the starting pose of each segment in the chain
+                    % to correctly reflect the new twist vectors
                     segment_i.g_0_o = obj.segments(i-1).get_tip_pose();
                 end
             end
@@ -80,26 +80,6 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
     
             for i = 1 : obj.N_segments
                 mat_g_circ_right(:, i) = obj.segments(i).g_circ_right;
-            end
-        end
-
-        % Get the strains experineced by each muscle in each segment
-        function mat_strains = get.strains(obj)
-            mat_strains = zeros(obj.N_rods, obj.N_segments);
-
-            for i = 1 : obj.N_segments
-                segment_i = obj.segments(i);
-                mat_strains(:, i) = segment_i.get_strains();
-            end
-        end
-
-        % Get the forces applied by each muscle in each segment
-        function mat_forces = get.forces(obj)
-            mat_forces = zeros(obj.N_rods, obj.N_segments);
-
-            for i = 1 : obj.N_segments
-                segment_i = obj.segments(i);
-                mat_forces(:, i) = segment_i.get_forces();
             end
         end
 
@@ -138,6 +118,37 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             end
         end
 
+        % Get the strains experineced by each muscle in each segment
+        function mat_strains = get_strains(obj, g_circ_right)
+            arguments
+                obj
+                g_circ_right = obj.g_circ_right;
+            end
+            obj.g_circ_right = g_circ_right;
+            mat_strains = zeros(obj.N_rods, obj.N_segments);
+
+            for i = 1 : obj.N_segments
+                segment_i = obj.segments(i);
+                mat_strains(:, i) = segment_i.get_strains();
+            end
+        end
+
+        % Get the forces applied by each muscle in each segment
+        function mat_forces = get_forces(obj, actuations, g_circ_right)
+            arguments
+                obj
+                actuations
+                g_circ_right = obj.g_circ_right;
+            end
+            obj.g_circ_right = g_circ_right;
+            mat_forces = zeros(obj.N_rods, obj.N_segments);
+
+            for i = 1 : obj.N_segments
+                segment_i = obj.segments(i);
+                mat_forces(:, i) = segment_i.get_forces(actuations, g_circ_right(:, i));
+            end
+        end
+        
         %%% Mechanics member functions!
         function mat_reactions = calc_external_reaction(obj, Q, g_circ_right)
             arguments
@@ -217,7 +228,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             % Enforce shear-free by making the shear residuals the g_circ shear
             % This way we drive g_circ shear to zero
             % TODO: 1. make this not in coordinates, 2. make this not universal
-            mat_residuals(2, :) = g_circ_right(2, :);
+            mat_residuals(2, :) = 10000 * g_circ_right(2, :);
         end
 
         function g_circ_right_eq = solve_equilibrium_gina(arm_series, pressures, Q, options)
