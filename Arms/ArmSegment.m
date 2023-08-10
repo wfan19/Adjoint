@@ -50,7 +50,7 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
                 g_o_rod_i = g_o_rods{i};
                 e1 = zeros(obj.group.dof, 1);
                 e1(1) = 1;
-                obj.mat_A(:, i) = transpose(inv(Pose2.adjoint(g_o_rod_i))) * e1;
+                obj.mat_A(:, i) = transpose(inv(obj.group.adjoint(g_o_rod_i))) * e1;
             end
         end
 
