@@ -42,7 +42,7 @@ classdef Plotter2D
             grid(ax, "on")
         end
 
-        function plot_g_circ_right(arm_series, fig)
+        function plot_g_circ_right(arm_series, parent)
             cell_g_circ_right = cell(1, arm_series.N_rods);
             for i = 1 : arm_series.N_rods
                 % For each rod, collect twist of each segment
@@ -55,20 +55,21 @@ classdef Plotter2D
             end
 
             % Now we plot the values for each rod
-            tiledlayout(fig, 1, 3);
-            titles = ["Strain", "Shear", "Length-scaled Curvature"];
+            titles = ["Length", "Shear", "Length-scaled Curvature"];
+            tl = tiledlayout(parent, 1, 3);
             for i = 1 : 3
-                nexttile
-                hold on
-                grid on
+                ax = nexttile(tl);
+                cla(ax);
+                hold(ax, "on")
+                grid(ax, "on")
                 s = linspace(0, 1, arm_series.N_segments);
                 for j = 1 : length(cell_g_circ_right)
                     rod_i_g_circ_right = cell_g_circ_right{j};
                     vals = rod_i_g_circ_right(i, :);
-                    plot(s, vals);
+                    plot(ax, s, vals);
                 end
-                title(titles(i));
-                legend(string(1:arm_series.N_rods));
+                title(ax, titles(i));
+                legend(ax, string(1:arm_series.N_rods));
             end
         end
     end
