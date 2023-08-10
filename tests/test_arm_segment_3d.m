@@ -5,17 +5,11 @@ end
 function setup(testCase)
     rho = 0.02;
     l_0 = 0.5;
-
-    g_o_A = Pose3.hat(eye(3), [0; 0; rho]);
-    g_o_B = Pose3.hat(eye(3), [0; rho; 0]);
-    g_o_C = Pose3.hat(eye(3), [0; 0; -rho]);
-    g_o_D = Pose3.hat(eye(3), [0; -rho; 0]);
-    g_o_rods = {g_o_A, g_o_B, g_o_C, g_o_D};
     
     g_o = Pose3.hat(eul2rotm([0, pi/2, 0], "xyz"), [0; 0; 0]);
 
     testCase.TestData.l_0 = l_0;
-    testCase.TestData.arm_segment = ArmSegment(Pose3, g_o, g_o_rods, l_0);
+    testCase.TestData.arm_segment = ArmSegmentFactory.make_3d_circular(4, rho, l_0, g_o);
 end
 
 function teardown(testCase)
@@ -46,4 +40,5 @@ function test_plotting(testCase)
     
     Plotter3D.plot_arm_segment(arm_segment, axes(figure()))
     grid on
+    view(30, 30)
 end

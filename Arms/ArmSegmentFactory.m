@@ -30,13 +30,15 @@ classdef ArmSegmentFactory
             arm_segment.rod_o.mechanics.l_0 = l_0; % Default length of the whole segment
         end
 
-        function arm_segment = make_3d_circular(rho, l_0)
+        function arm_segment = make_3d_circular(N_rods, rho, l_0, g_o)
             % Create list of angles around the circle that the rods will sit at
             theta = linspace(0, 2*pi, N_rods + 1);
             theta = theta(1:end-1);
+
+            yaw_muscles = theta - pi/2;
             
             g_o_rods = cell(1, N_rods);
-            for i = 1 : n_muscles
+            for i = 1 : N_rods
                 % Posn of each rod is based on the angle around the circle
                 t_muscle_i = rho * [0; cos(theta(i)); sin(theta(i))];
 
@@ -45,8 +47,7 @@ classdef ArmSegmentFactory
                 g_o_rods{i} = Pose3.hat(R_muscle_i, t_muscle_i);
             end
 
-            g_0_o = Pose3(eul2rotm([0, -pi/2, 0], "xyz"), [0; 0; 0]);
-            arm_segment = ArmSegment(Pose3, g_0_o, g_o_rods, l_0);
+            arm_segment = ArmSegment(Pose3, g_o, g_o_rods, l_0);
             
             for i = 1 : length(arm_segment.rods)
                 arm_segment.rods(i).mechanics = GinaMuscleMechanics(l_0);
