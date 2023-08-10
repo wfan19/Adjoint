@@ -245,7 +245,9 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5, "MaxIterations", 4e2, "Algorithm", "levenberg-marquardt");     % Increase maximum allowed function evaluations
             if options.print
                 opt = optimoptions(opt, "display", "final");
-            end
+            else
+                opt = optimoptions(opt, "display", "off");
+            end 
 
             g_circ_right_0 = zeros(size(arm_series.g_circ_right));
             for i = 1 : length(arm_series.segments)
