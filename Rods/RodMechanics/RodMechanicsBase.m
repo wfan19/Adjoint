@@ -12,9 +12,7 @@ classdef RodMechanicsBase
         l_0 = 1
         strain = 0
         f_force = @f_force_default
-    end
-
-    properties(Constant)
+        
         e_bounds = [-0.5, 0.5]   % Bounds on the strain
         a_bounds = [0, 50]   % Bounds on the actuation/pressure values
     end
