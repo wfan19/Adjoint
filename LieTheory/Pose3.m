@@ -20,6 +20,11 @@ classdef Pose3 < GeneralLinearGroup
                 R = round(R, 5);
             end
 
+            if all(size(R) == [6, 1])
+                t = R(1:3);
+                R = eul2rotm(R(4:6)', "xyz");
+            end
+
             SE3_out = eye(4, class([R, t(:)]));
 
             SE3_out(1:3, 1:3) = R;
