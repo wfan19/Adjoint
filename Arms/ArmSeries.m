@@ -150,11 +150,12 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
         end
         
         %%% Mechanics member functions!
-        function mat_reactions = calc_external_reaction(obj, Q, g_circ_right)
+        function mat_reactions = calc_external_reaction(obj, Q, g_circ_right, options)
             arguments
                 obj
                 Q
                 g_circ_right = obj.g_circ_right
+                options.frame = "World"
             end
             % Update to a new base-curve if it is specified
             if any(g_circ_right ~= obj.g_circ_right, "all")
@@ -169,15 +170,26 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                 g_i = segment.g_0_o;
                 g_i_tip = inv(g_i) * g_tip;
         
-                % Transform the force from a force Q in world coodrinates to be in local coordinates at the tip
-                % In Ross parlance, this is a transform from a world-force to a right-force
-                Q_right_undercirc_tip = obj.group.left_lifted_action(g_tip)' * Q;
+                if strcmp(options.frame, "World")
+                    % Transform the force from a force Q in world coodrinates to be in local coordinates at the tip
+                    % In Ross parlance, this is a transform from a world-force to a right-force
+                    Q_right_undercirc_tip = obj.group.left_lifted_action(g_tip)' * Q;
+    
+                    % Compute the left-force at the tip, which is the same as
+                    % the left-force at the base.
+                    % Mapping from right-force to left-force is done through
+                    % the dual adjoint inverse.
+                    Q_left_undercirc_i = inv(obj.group.adjoint(g_i_tip))' * Q_right_undercirc_tip;
+                elseif strcmp(options.frame, "Tip")
+                    % If the force is specified in the body frame, we don't
+                    % need the left lifted action to transform it into the
+                    % body frame. 
+                    % 
+                    % In that case it's just the adjoint to transform it
+                    % from the tip to the current point on the body.
+                    Q_left_undercirc_i = inv(obj.group.adjoint(g_i_tip))' * Q;
+                end
 
-                % Compute the left-force at the tip, which is the same as
-                % the left-force at the base.
-                % Mapping from right-force to left-force is done through
-                % the dual adjoint inverse.
-                Q_left_undercirc_i = inv(obj.group.adjoint(g_i_tip))' * Q_right_undercirc_tip;
                 mat_reactions(:, i) = Q_left_undercirc_i;
             end
         end
@@ -209,19 +221,20 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
         % Compute the residuals of the static equilibrium equations:
         % The internal actuator forces and the forces from the external
         % loading must sum to zero for each segment.
-        function mat_residuals = check_equilibrium(obj, pressures, Q, g_circ_right)
+        function mat_residuals = check_equilibrium(obj, pressures, Q, g_circ_right, options)
             arguments
                 obj
                 pressures
                 Q
                 g_circ_right = obj.g_circ_right
+                options.frame="World"
             end
             if any(g_circ_right ~= obj.g_circ_right, "all")
                 obj.g_circ_right = g_circ_right;
             end
 
             internal_reactions = obj.calc_internal_reaction(pressures, g_circ_right);
-            external_reactions = obj.calc_external_reaction(Q, g_circ_right);
+            external_reactions = obj.calc_external_reaction(Q, g_circ_right, "frame", options.frame);
 
             mat_residuals = internal_reactions + external_reactions;
             
@@ -237,9 +250,10 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                 pressures
                 Q
                 options.print=true
+                options.frame="World"
             end
             % Curry the cost function: here we just solve for g_circ_right.
-            f_check_eq = @(g_circ_right) arm_series.check_equilibrium(pressures, Q, g_circ_right);
+            f_check_eq = @(g_circ_right) arm_series.check_equilibrium(pressures, Q, g_circ_right, "frame", options.frame);
 
             % Optimizer options
             opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5, "MaxIterations", 4e2, "Algorithm", "levenberg-marquardt");     % Increase maximum allowed function evaluations
