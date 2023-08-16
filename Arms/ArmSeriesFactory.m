@@ -46,6 +46,13 @@ classdef ArmSeriesFactory
             radii_inner = linspace(rho_inner_base, rho_inner_tip, N_segments);
             radii_outer = linspace(rho_outer_base, rho_outer_tip, N_segments);
 
+            arm_series = ArmSeriesFactory.varying_taper_2d_antagonist_arm(radii_inner, radii_outer, l_0);
+        end
+
+        function arm_series = varying_taper_2d_antagonist_arm(radii_inner, radii_outer, l_0)
+            assert(length(radii_inner) == length(radii_outer), "Number of outer and inner radii do not match");
+            N_segments = length(radii_inner);
+
             segments = ArmSegment.empty(0, N_segments);
             for i = 1 : N_segments
                 segments(i) = ArmSegmentFactory.make_2d_antagonism(radii_inner(i), radii_outer(i), l_0);

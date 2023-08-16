@@ -28,6 +28,9 @@ classdef ArmSegmentFactory
     
             arm_segment = ArmSegment(Pose2, g_0_o, g_o_rods, l_0);
             arm_segment.rod_o.mechanics.l_0 = l_0; % Default length of the whole segment
+
+            arm_segment.set_mechanics(GinaMuscleMechanics(l_0), [2, 3])
+            arm_segment.set_mechanics(BasicPolyBellowMechanics(l_0), [1, 4]);
         end
 
         function arm_segment = make_3d_circular(N_rods, rho, l_0, g_o)
