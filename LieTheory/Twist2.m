@@ -73,6 +73,14 @@ classdef Twist2 < GeneralLinearAlgebra
             omega_out = v_Twist2_in(3);
             omega_out = omega_out(:);
         end
+
+        function ad_out = adjoint(v_Twist2_in)
+            ad_out = zeros(3, 3, class(v_Twist2_in));
+            ad_out(2, 1) = v_Twist2_in(3);
+            ad_out(1, 2) = -v_Twist2_in(3);
+            ad_out(1, 3) = v_Twist2_in(2);
+            ad_out(2, 3) = -v_Twist2_in(1);
+        end
     end
 end
 
