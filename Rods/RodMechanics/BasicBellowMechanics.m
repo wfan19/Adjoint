@@ -7,6 +7,9 @@ classdef BasicBellowMechanics < RodMechanicsBase
             end
             f_force = BasicBellowMechanics.make_bellow_force_func();
             obj@RodMechanicsBase(l_0, f_force);
+
+            obj.e_bounds = [-0.142, 0.142];
+            obj.a_bounds = [0, 70];
         end
     end
 

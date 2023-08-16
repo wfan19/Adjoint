@@ -48,17 +48,17 @@ classdef RodMechanicsBase
         end
 
         % Plot the actuator's force surface
-        function plot_force_surface(obj, e_range, a_range, ax, options)
+        function plot_force_surface(obj, e_bounds, a_bounds, ax, options)
             arguments
                 obj
-                e_range = obj.e_range
-                a_range = obj.a_range
+                e_bounds = obj.e_bounds
+                a_bounds = obj.a_bounds
                 ax = axes(figure())
                 options.resolution = 40
             end
 
-            strains = linspace(e_range(1), e_range(2), options.resolution);
-            actuations = linspace(a_range(1), a_range(2), options.resolution);
+            strains = linspace(e_bounds(1), e_bounds(2), options.resolution);
+            actuations = linspace(a_bounds(1), a_bounds(2), options.resolution);
             
             [E, A] = meshgrid(strains, actuations);
             F = zeros(options.resolution, options.resolution);
@@ -77,6 +77,14 @@ classdef RodMechanicsBase
             %     - Free movement
             %     - Blocked force
             mesh(ax, E, A, F);
+            xlabel("Strain (%)")
+            ylabel("Pressure (kpa)")
+            zlabel("Force (N)")
+
+            free_contraction = contourc(strains, actuations, F, [0,0]);
+            free_contraction = free_contraction(:, 2:end);
+            hold on
+            plot3(free_contraction(1, :), free_contraction(2, :), zeros(length(free_contraction)), "k", "linewidth", 3);
         end
         
     end
