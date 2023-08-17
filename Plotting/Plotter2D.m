@@ -14,24 +14,55 @@ classdef Plotter2D
     % All plotting functions are static for now
     % Might make Plotter a proper class later?
     methods(Static)
-        function plot_rod(rod, ax)
+        function plot_rod(rod, ax, options)
+            arguments
+                rod
+                ax
+                options.color = [155 155 155] / 255;
+            end
             resolution = 20;
             t = linspace(0, rod.max_s, resolution);
             v_poses = rod.calc_posns(t=t);
             position = rod.group.v_translation(v_poses);
 
             % Just plot x and y, even if the arm is in 3D.
-            plot(ax, position(1, :), position(2, :));
+            % TODO: More linestyle options, etc
+            plot(ax, position(1, :), position(2, :), "color", options.color, "linewidth", 2);
             axis(ax, "equal")
         end
 
-        function plot_arm_segment(arm_segment, ax)
+        function plot_arm_segment(arm_segment, ax, options)
+            arguments
+                arm_segment
+                ax
+                options.colors = nan(arm_segment.N_rods, 3); % TODO: Perhaps colors can be a property of the Plotter2D object
+            end
             hold(ax, "on")
+
+            % Initialize default colors if we haven't yet
+            % Just linearly interpolate hues from red to blue
+            if any(isnan(options.colors), "all")
+                hues = linspace(0, 240/360, arm_segment.N_rods);
+                rod_colors_hsv = [hues; ones(size(hues)); ones(size(hues))]';
+                options.colors = hsv2rgb(rod_colors_hsv);
+            end
             
+            % Plot each rod in the segment
             for i = 1 : length(arm_segment.rods)
                 rod_i = arm_segment.rods(i);
-                Plotter2D.plot_rod(rod_i, ax);
+                Plotter2D.plot_rod(rod_i, ax, "color", options.colors(i, :));
             end
+
+            % Plot the separators between each segment
+            rho = max(abs(arm_segment.mat_A(end, :)));
+            function spacer_points_world = plot_spacer(g_spacer)
+                spacer_points_body = [0 0; -rho rho];
+                spacer_points_world = g_spacer(1:2, 1:2) * spacer_points_body + g_spacer(1:2, 3);
+                
+                plot(ax, spacer_points_world(1, :), spacer_points_world(2, :), 'k', "linewidth", 2);
+            end
+            plot_spacer(arm_segment.g_0_o);
+            plot_spacer(arm_segment.get_tip_pose());
         end
 
         function plot_arm_series(arm_series, ax)    

@@ -16,6 +16,8 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
         g_circ_right
         g_0_o
         mechanics
+
+        N_rods
     end
     
     methods
@@ -55,6 +57,10 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
         end
 
         %% Setters and Getters
+        function n_rods = get.N_rods(obj)
+            n_rods = length(obj.rods);
+        end
+
         % Set and retrieve the twist-vector of the base-curve
         function g_circ_right = get.g_circ_right(obj)
             g_circ_right = obj.rod_o.g_circ_right;
