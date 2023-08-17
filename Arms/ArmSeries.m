@@ -249,7 +249,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                 arm_series
                 pressures
                 Q
-                options.print=true
+                options.print=false
                 options.frame="World"
             end
             % Curry the cost function: here we just solve for g_circ_right.
@@ -272,7 +272,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             
             % Toggle whether to print the residuals
             if any(residuals > 0.01)
-                disp("Nonzero residual detected. Printing: ")
+                disp("fzero residual is nonzero (> 0.01). Printing: ")
                 disp(residuals)
             end
 
