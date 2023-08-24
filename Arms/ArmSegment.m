@@ -241,6 +241,28 @@ classdef ArmSegment < handle & matlab.mixin.Copyable
             % TODO: 1. make this not in coordinates, 2. make this not universal
             mat_residuals(2, :) = 10000 * g_circ_right(2);
         end
+
+        function [g_circ_right_eq, g_next, g_ucirc_left_next] = integrate_step(segment, pressures, g_ucirc_left)
+            internal_reaction = -g_ucirc_left;
+            
+            % Solve for the g_circ_right that equalizes with the
+            % internal reaction
+            opt = optimoptions("fsolve", "Algorithm", "levenberg-marquardt");
+            f_residuals = @(g_circ_right) ...
+                diag([1; 0; 1]) * ((segment.mat_A * segment.get_forces(pressures, g_circ_right)) - internal_reaction);
+            
+            l_0 = segment.rod_o.mechanics.l_0;
+            [g_circ_right_eq, res] = fsolve(f_residuals, [l_0; 0; 0], opt);
+            if any(res > 1e-3)
+                disp("fsolve residual is nonzero (> 0.01). Printing: ")
+                disp(res)
+            end
+            segment.g_circ_right = g_circ_right_eq;
+        
+            ds = segment.rod_o.max_s;
+            g_next = segment.g_0_o * Twist2.expm(g_circ_right_eq * ds);
+            g_ucirc_left_next = Pose2.adjoint(Twist2.expm(g_circ_right_eq * ds))' * g_ucirc_left;
+        end
     end
 
     methods(Access = protected)

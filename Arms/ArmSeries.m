@@ -188,6 +188,8 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
                     % In that case it's just the adjoint to transform it
                     % from the tip to the current point on the body.
                     Q_left_undercirc_i = inv(obj.group.adjoint(g_i_tip))' * Q;
+                else
+                    error("Unrecognized frame name. Options are 'Tip' and 'World'")
                 end
 
                 mat_reactions(:, i) = Q_left_undercirc_i;
@@ -256,7 +258,7 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             f_check_eq = @(g_circ_right) arm_series.check_equilibrium(pressures, Q, g_circ_right, "frame", options.frame);
 
             % Optimizer options
-            opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5, "MaxIterations", 4e2, "Algorithm", "levenberg-marquardt");     % Increase maximum allowed function evaluations
+            opt = optimoptions('fsolve',"MaxFunctionEvaluations", 1e5, "MaxIterations", 4e3, "Algorithm", "levenberg-marquardt");     % Increase maximum allowed function evaluations
             if options.print
                 opt = optimoptions(opt, "display", "final");
             else
@@ -271,12 +273,48 @@ classdef ArmSeries < handle & matlab.mixin.Copyable
             [g_circ_right_eq, residuals] = fsolve(f_check_eq, g_circ_right_0, opt);
             
             % Toggle whether to print the residuals
-            if any(residuals > 0.01)
+            if any(abs(residuals) > 0.01)
                 disp("fzero residual is nonzero (> 0.01). Printing: ")
                 disp(residuals)
             end
 
             arm_series.g_circ_right = g_circ_right_eq;
+        end
+
+        %% Boundary Value Problem formulation of the equilibrium model 
+        function [mat_g_circ_right, mat_g_ucirc_left] = integrate_ivp(arm, pressures, g_ucirc_left_0)
+            gs = cell(1, arm.N_segments);
+            mat_g_ucirc_left = zeros(3, arm.N_segments);
+            mat_g_circ_right = zeros(3, arm.N_segments);
+        
+            gs{1} = arm.segments(1).g_0_o;
+            mat_g_ucirc_left(:, 1) = g_ucirc_left_0;
+        
+            for i = 1 : arm.N_segments
+                segment_i = arm.segments(i);
+                [g_circ_right, g_next, g_ucirc_left_next] = segment_i.integrate_step(pressures, mat_g_ucirc_left(:, i));
+                
+                if i < arm.N_segments
+                    gs{i+1} = g_next;
+                    mat_g_ucirc_left(:, i+1) = g_ucirc_left_next;
+                end
+                mat_g_circ_right(:, i) = g_circ_right;
+            end
+        end
+        
+        function residual = bvp_residual(arm, pressures, Q, g_ucirc_left_0)
+                [gs, g_circ_right, g_ucirc_left] = integrate_ivp(arm, pressures, g_ucirc_left_0);
+                g_tip = gs{end} * Twist2.expm(g_circ_right(:, end) * 1/3);
+                Q_body = inv(Pose2.adjoint(Twist2.expm(g_circ_right(:, end) * 1/3)))' * Pose2.left_lifted_action(g_tip)' * Q;
+                residual = g_ucirc_left(:, end) + Q_body;
+        end
+        
+        function g_circ_right = solve_equilibrium_bvp(arm, pressures, Q)
+            f_residual = @(g_ucirc_left_0) bvp_residual(arm, pressures, Q, g_ucirc_left_0);
+            opt = optimoptions("fsolve", "algorithm", "levenberg-marquardt");
+            g_ucirc_left_0_eq = fsolve(f_residual, [-5; 0; -0.17], opt);
+        
+            [~, g_circ_right, ~] = integrate_ivp(arm, pressures, g_ucirc_left_0_eq);
         end
     end
 
